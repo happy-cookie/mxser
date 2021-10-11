@@ -1,0 +1,245 @@
+#!/bin/sh
+###############################################################################
+# Program:
+# 		MOXA Linux driver installer
+#	
+# History:
+# 2009/05/21
+#
+# Author:
+# Eric Lo, eric.lo@moxa.com
+#
+# Discription:
+# The script install and load the MOXA Linux driver.
+#
+###############################################################################
+
+TARGET_DRIVER1=mxser
+TARGET_DRIVER2=mxupcie
+BAN_DRIVER1=8250_moxa
+MXVER=`awk '{if($2=="MX_SER_VERSION"){print $3}}' mx_ver.h | sed s/\"//g`
+MAJOR_PCI=30
+MAJOR_PCIE=31
+MINOR=32
+check=""
+OS=""
+ADD_BKLT=0
+
+#
+# Information
+#
+echo "*********************************************************************"
+echo " MOXA Smartio/Industio Family Multiport Board Device Driver "
+echo " Quick install Script"
+echo "*********************************************************************"
+
+#
+# Detect Kernel Module 8250_moxa
+#
+if lsmod | grep -q $BAN_DRIVER1 ; then
+	echo "The \"$BAN_DRIVER1\" kernel driver is currently in use by your system."
+	echo "\"$BAN_DRIVER1\" is incompatible with MOXA Smartio/Industio Famliy driver."
+
+	if [ -f /etc/redhat-release ]
+       	then
+		OS="linux"
+	elif [ -f /etc/SuSE-release ]
+	then
+		OS="SuSE"
+	elif [ -f /etc/debian_version ]
+	then
+		OS="debian"
+	fi
+
+	if [ "$OS" = "debian" ]
+	then
+		echo "This script will follow the below step to setup MOXA Smartio/Industio Family driver."
+                echo ""
+                echo "Step 1: Add \"$BAN_DRIVER1\" to the \"/etc/modprobe.d/blacklist.conf\"."
+                echo "Step 2: Install and setup MOXA Smartio/Industio Family driver."
+                echo "Step 3: Reboot the system for the changes to take effect."
+                echo ""
+
+		echo "This script will add \"$BAN_DRIVER1\" to balcklist to disable \"$BAN_DRIVER1\"."
+		echo "Do you want to add \"$BAN_DRIVER1\" to blacklist? [y/N]"
+		read check
+		case $check in
+		[n])
+			exit 0
+			;;
+		[N])
+			exit 0
+			;;
+		[y])
+			;;
+		[Y])
+			;;
+		*)
+			exit 0
+			;;
+		esac
+
+		#
+		# Add build-in module to blacklist
+		#
+		echo "Add \"$BAN_DRIVER1\" to /etc/modprobe.d/blacklist.conf..."
+		if [ -f "/etc/modprobe.d/blacklist.conf" ]; then
+			if ! grep -q "blacklist $BAN_DRIVER1" /etc/modprobe.d/blacklist.conf; then
+				echo "blacklist $BAN_DRIVER1">>/etc/modprobe.d/blacklist.conf
+			fi
+		else
+			touch /etc/modprobe.d/blacklist.conf
+			echo "blacklist $BAN_DRIVER1">>/etc/modprobe.d/blacklist.conf
+		fi
+		echo "Update the kernel initramfs..."
+		sudo update-initramfs -u
+		ADD_BKLT=1
+	elif [ "$OS" = "linux" ]
+	then
+		echo "This script will follow the below step to setup MOXA Smartio/Industio Family driver."
+                echo ""
+                echo "Step 1: Add \"$BAN_DRIVER1\" to the \"/etc/modprobe.d/blacklist.conf\"."
+                echo "Step 2: Install and setup MOXA Smartio/Industio Family driver."
+                echo "Step 3: Reboot the system for the changes to take effect."
+                echo ""
+
+		echo "This script will add \"$BAN_DRIVER1\" to balcklist to disable \"$BAN_DRIVER1\"."
+		echo "Do you want to add \"$BAN_DRIVER1\" to blacklist? [y/N]"
+		read check
+		case $check in
+		[n])
+			exit 0
+			;;
+		[N])
+			exit 0
+			;;
+		[y])
+			;;
+		[Y])
+			;;
+		*)
+			exit 0
+			;;
+		esac
+
+		#
+		# Add build-in module to blacklist
+		#
+		echo "Add \"$BAN_DRIVER1\" to /etc/modprobe.d/blacklist.conf..."
+		if [ -f "/etc/modprobe.d/blacklist.conf" ]; then
+			if ! grep -q "blacklist $BAN_DRIVER" /etc/modprobe.d/blacklist.conf; then
+				echo "blacklist $BAN_DRIVER">>/etc/modprobe.d/blacklist.conf
+			fi
+		else
+			touch /etc/modprobe.d/blacklist.conf
+			echo "blacklist 8250_moxa">>/etc/modprobe.d/blacklist.conf
+		fi
+		echo "Update the kernel initramfs..."
+		sudo dracut --force
+		ADD_BKLT=1
+	elif [ "$OS" = "SuSE" ]
+	then
+		echo "This script will follow the below step to setup MOXA Smartio/Industio Family driver."
+                echo ""
+                echo "Step 1: Add \"$BAN_DRIVER1\" to the \"/etc/modprobe.d/blacklist.conf\"."
+                echo "Step 2: Install and setup MOXA Smartio/Industio Family driver."
+                echo "Step 3: Reboot the system for the changes to take effect."
+                echo ""
+	
+		echo "This script will add \"$BAN_DRIVER1\" to balcklist to disable \"$BAN_DRIVER1\"."
+		echo "Do you want to add \"$BAN_DRIVER1\" to blacklist? [y/N]"
+		read check
+		case $check in
+		[n])
+			exit 0
+			;;
+		[N])
+			exit 0
+			;;
+		[y])
+			;;
+		[Y])
+			;;
+		*)
+			exit 0
+			;;
+		esac
+
+		#
+		# Add build-in module to blacklist
+		#
+		echo "Add \"$BAN_DRIVER1\" to /etc/modprobe.d/blacklist.conf..."
+		if [ -f "/etc/modprobe.d/blacklist.conf" ]; then
+			if ! grep -q "blacklist $BAN_DRIVER" /etc/modprobe.d/blacklist.conf; then
+				echo "blacklist $BAN_DRIVER">>/etc/modprobe.d/blacklist.conf
+			fi
+		else
+			touch /etc/modprobe.d/blacklist.conf
+			echo "blacklist 8250_moxa">>/etc/modprobe.d/blacklist.conf
+		fi
+		echo "Update the kernel initrd..."
+		sudo /sbin/mkinitrd
+		ADD_BKLT=1
+	else
+		echo "Please disable \"$BAN_DRIVER1\" before continue installation."
+		exit 0		
+	fi
+fi
+
+
+if lsmod | grep -q $TARGET_DRIVER1 ; then
+	echo "Found $TARGET_DRIVER1 in system..."
+	echo "Unloading $TARGET_DRIVER1..."
+	rmmod $TARGET_DRIVER1
+	echo "Unload $TARGET_DRIVER1 successfully."
+	echo ""
+fi
+
+if lsmod | grep -q $TARGET_DRIVER2 ; then
+	echo "Found $TARGET_DRIVER2 in system..."
+	echo "Unloading $TARGET_DRIVER2..."
+	rmmod $TARGET_DRIVER2
+	echo "Unload $TARGET_DRIVER2 successfully."
+	echo ""
+fi
+
+if make install ; then
+	echo ""
+	echo "Loading driver..."
+	modprobe $TARGET_DRIVER1
+	modprobe $TARGET_DRIVER2
+	[ -f /dev/mxser ] || rm -rf /dev/mxser
+	mknod /dev/mxser c $MAJOR_PCI $MINOR
+	chmod a+wx /dev/mxser
+	[ -f /dev/mxupcie ] || rm -rf /dev/mxupcie
+	mknod /dev/mxupcie c $MAJOR_PCIE $MINOR
+	chmod a+wx /dev/mxupcie	
+	echo "**********************************************************************"
+	echo -n " MOXA Smartio/Industio Family driver ver "
+	echo -n $MXVER
+        echo " loaded successfully."
+	echo "**********************************************************************"
+fi
+
+if [ "$ADD_BKLT" -eq "1" ]
+then
+	echo "You must reboot the system for the blacklist.conf changeto take effect."
+	echo "Do you want to reboot the system now? [y/N]"
+	read check
+	case $check in
+	[n])
+		exit 0
+		;;
+	[N])
+		exit 0
+		;;
+	[y])
+		;;
+	[Y])
+		;;
+	*)
+		exit 0
+		;;
+	esac
+	sudo reboot
+fi
