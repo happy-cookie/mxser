@@ -71,7 +71,7 @@
 #endif
 
 #define MX_CPLD_LOCK(lock)		spin_lock(lock)
-#define MX_CPLD_UNLOCK(lock)	spin_unlock(lock)
+#define MX_CPLD_UNLOCK(lock)	        spin_unlock(lock)
 
 #define PORTNO(x)	((x)->index)
 

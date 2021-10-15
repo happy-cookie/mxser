@@ -1054,7 +1054,7 @@ static int mxupcie_write(struct tty_struct * tty,
 		if ( c <= 0 )
 			break;
 
-			memcpy(info->xmit_buf + info->xmit_head, buf, c);
+		memcpy(info->xmit_buf + info->xmit_head, buf, c);
 		MX_LOCK(&info->slock);    
 		info->xmit_head = (info->xmit_head + c) & (SERIAL_XMIT_SIZE - 1);
 		info->xmit_cnt += c;
@@ -1563,7 +1563,7 @@ static int mxupcie_ioctl(struct tty_struct * tty, unsigned int cmd,
 			case MXUPCIE_BOARD_CP138E_A: 
 			case MXUPCIE_BOARD_CP134EL_A: 
 			case MXUPCIE_BOARD_CP116E_A_A: 
-            case MXUPCIE_BOARD_CP116E_A_B: 
+                case MXUPCIE_BOARD_CP116E_A_B: 
 				port_idx = info->port % 8;
 				cpld.base = (unsigned char *)info->iobar3_addr;
 				MX_CPLD_LOCK( &(mxupciecfg[info->board_idx].board_lock) );
@@ -1581,12 +1581,13 @@ static int mxupcie_ioctl(struct tty_struct * tty, unsigned int cmd,
 			case MXUPCIE_BOARD_CP138E_A: 
 			case MXUPCIE_BOARD_CP134EL_A: 
 			case MXUPCIE_BOARD_CP116E_A_A: 
-            case MXUPCIE_BOARD_CP116E_A_B: 
+                case MXUPCIE_BOARD_CP116E_A_B: 
 				port_idx = info->port % 8;
 				cpld.base = (unsigned char *)info->iobar3_addr;
-                MX_CPLD_LOCK( &(mxupciecfg[info->board_idx].board_lock) ); 
+                                MX_CPLD_LOCK( &(mxupciecfg[info->board_idx].board_lock) ); 
 				ret = mxCPLDSetMasterSlave(cpld, port_idx, (int)arg);
 				MX_CPLD_UNLOCK( &(mxupciecfg[info->board_idx].board_lock) ); 
+				return ret;
 			default : 
 				return -EPERM; /* Other Not Supported */
 			}
@@ -1824,7 +1825,7 @@ static int mx_ioctl_special(unsigned int cmd, unsigned long arg)
 			if (copy_to_user((void*)arg, &uchCap, sizeof(unsigned char) * MXUPCIE_BOARDS))
 				return -EFAULT;
 
-			return ;
+			return 0;
 		}
 #if 0
 		case SMARTIO_GET_PCI_CAPABILITY:{
@@ -1916,6 +1917,7 @@ static int mx_ioctl_special(unsigned int cmd, unsigned long arg)
 			unsigned long ulRegVal = 0;
 			unsigned long epaddr;
 			unsigned short ulData = 0;
+			struct mxupcie_pci_setting pci_setting ={0};
 			
 			//Get EEP Content
 			epaddr = (EEP_PCI_CAP_ADDR / 2) << PCIeUartEPAddrOff;
@@ -1923,9 +1925,8 @@ static int mx_ioctl_special(unsigned int cmd, unsigned long arg)
 			ulRegVal |= epaddr;//ep addr
 			ulRegVal |= PCIeUartEPStart;//eeprom start
 
-			struct mxupcie_pci_setting pci_setting ={0};
-
-			copy_from_user(&pci_setting, arg, sizeof(struct mxupcie_pci_setting));
+			if(copy_from_user(&pci_setting, (void*)arg, sizeof(struct mxupcie_pci_setting)))
+                                return -EFAULT;
 			
 			//pr_info("arg -> whichPciBoard = %d\n", pci_setting.whichPciBoard);
 			//pr_info("arg -> cfg_value = %d\n", pci_setting.cfg_value);
@@ -1987,7 +1988,7 @@ static int mx_ioctl_special(unsigned int cmd, unsigned long arg)
 					break;
 			}
 			
-			return;
+			return 0;
 		}
 		default:
 			return -ENOIOCTLCMD;
@@ -3665,10 +3666,7 @@ static void mx_pci_mdelay(unsigned howlong)
 
 static void get_pci_capability( struct mxupcie_hwconf *hwconf, unsigned char * eep_ret )
 {
-	int read_ret = 0;
 	int write_ret = 0;
-	int j = 0;
-	unsigned char flag;
 	unsigned long ulRegVal = 0;
 	unsigned long epaddr;
 	unsigned short ulData = 0;

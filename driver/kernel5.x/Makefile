@@ -1,3 +1,4 @@
+CONFIG_MODULE_SIG=n
 MXVER:=`awk '{if($$2=="MX_SER_VERSION"){print $$3}}' ../../mx_ver.h | sed s/\"//g`
 TARGET_DRIVER1:=mxser
 TARGET_DRIVER2:=mxupcie
@@ -95,13 +96,15 @@ clean_local:
 	@rm -f mxser.o.ur-safe
 	@rm -f mxpcie.o
 	@rm -f .mxpcie.o.cmd
-	@rm -f mxupcie.o	
+	@rm -f mxupcie.o
 	@rm -f .mxupcie.o.cmd
 	@rm -f *.symvers
+	@rm -f .*.cmd
 	@rm -f *.log
 	@rm -f ../../*.log
 	@rm -f *.markers
 	@rm -f *.order
+	@rm -f .*.order.cmd
 	@rm -f ${CPLD_PATH}/*.o
 	@rm -f ${CPLD_PATH}/.cpld.o.cmd ${CPLD_PATH}/.gpio.o.cmd
 
@@ -119,6 +122,6 @@ clean_lib:
 	@echo " removed successfully."
 	@echo "**********************************************************************"
 
-unload_driver:	
+unload_driver:
 	@if lsmod | grep -q $(TARGET_DRIVER1) ; then rmmod $(TARGET_DRIVER1) ; fi
 	@if lsmod | grep -q $(TARGET_DRIVER2) ; then rmmod $(TARGET_DRIVER2) ; fi
