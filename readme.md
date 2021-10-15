@@ -26,7 +26,7 @@ make
 make install
 ```
 
-### For load PCIe card support
+### For module for PCIe MOXA card
 ```
 modprobe mxupcie
 ```
