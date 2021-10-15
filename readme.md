@@ -26,7 +26,7 @@ make
 make install
 ```
 
-### For module for PCIe MOXA card
+### Load kernel module for PCIe MOXA card
 ```
 modprobe mxupcie
 ```
